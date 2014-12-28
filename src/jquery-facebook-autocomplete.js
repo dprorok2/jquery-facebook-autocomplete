@@ -20,5 +20,15 @@
         }
       }
     });
+    FB.api( "/me?fields=name,picture", function (response) {
+      if(response && !response.error){
+        var data = {
+          name: response.name,
+          picture: response.picture.data.url
+        };
+        console.log(data);
+        friendsList[0] = data;
+      }
+    });
   };
 }(jQuery));
