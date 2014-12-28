@@ -20,7 +20,7 @@ module.exports = (grunt) ->
       all:
         options:
           hostname: "localhost"
-          port: 8001
+          port: 9001
           base: "demo"
 
     watch:

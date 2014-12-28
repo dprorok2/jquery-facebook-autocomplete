@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script src="https://connect.facebook.net/en_US/sdk.js"></script>
-    
-    <script>
-      FB.init({
-        appId      : '584858804947426',
-        cookie     : true,
-        xfbml      : true,
-        version    : 'v2.2'
-      });
-
-    function checkLoginState() {
-      FB.getLoginStatus(function(response) {
-        if(response.status === 'connected'){
-          console.log("Connected");
-        }
-      });
-    }
-    </script>
-
-    <link rel="stylesheet" href="./jquery-facebook-autocomplete.css">
-    <script type="text/javascript" src="./jquery-facebook-autocomplete.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="jquery-facebook-autocomplete.css">
+    <script type="text/javascript" src="jquery-facebook-autocomplete.js"></script>
   </head>
   <body>
-    <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-    </fb:login-button>
+    <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '959209310780336',
+        status     : true,
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v2.1'
+      });
+    };
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
     <input id="facebook-demo" type="text" />
+        <fb:login-button scope="public_profile,email">
+    </fb:login-button>
   </body>
 </html>
