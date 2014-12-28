@@ -17,8 +17,10 @@
         xfbml      : true,
         version    : 'v2.2'
       });
-      $(document).ready(function(){
-        $("#facebook-demo").autoComplete();
+      FB.getLoginStatus(function(response) {
+        if(response.status === 'connected'){
+          initializeDemo();
+        }
       });
     };
     (function(d, s, id){
@@ -28,6 +30,10 @@
        js.src = "//connect.facebook.net/en_US/sdk.js";
        fjs.parentNode.insertBefore(js, fjs);
      }(document, 'script', 'facebook-jssdk'));
+
+    function initializeDemo(){
+      $("#facebook-demo").autoComplete();
+    }
   </script>
   <nav class="navbar navbar-default" style="background-color: #3a5795; border-color: initial; border-radius: initial">
     <div class="container-fluid">

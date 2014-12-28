@@ -15,6 +15,7 @@
             name: response.data[i].name,
             picture: response.data[i].picture.data.url
           };
+          console.log(data);
           friendsList[i] = data;
         }
       }
