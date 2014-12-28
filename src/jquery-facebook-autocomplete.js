@@ -18,7 +18,6 @@
           friendsList[i] = data;
         }
       }
-      
     });
   };
 }(jQuery));
