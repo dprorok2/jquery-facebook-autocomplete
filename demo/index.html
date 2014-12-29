@@ -37,9 +37,9 @@
        js.src = "//connect.facebook.net/en_US/sdk.js";
        fjs.parentNode.insertBefore(js, fjs);
      }(document, 'script', 'facebook-jssdk'));
-
+    var autocompleteDemo;
     function initializeDemo(){
-      $("#facebook-demo").autoComplete();
+      autocompleteDemo = new $.autoComplete($("#facebook-demo"));
       $("#login-button").replaceWith("<span class=\"navbar-text navbar-fb-text\">You are logged in<span>");
     }
   </script>

@@ -24,6 +24,9 @@
   background-color: #6d84b4;
   border-color: #3a5795;
 }
+.autocomplete .autocomplete-list .autocomplete-user-selected .autocomplete-name {
+  color: #ffffff !important;
+}
 .autocomplete .autocomplete-list .autocomplete-image {
   position: absolute;
   display: block;
@@ -40,7 +43,4 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #141823;
-}
-.autocomplete .autocomplete-list .autocomplete-name-selected {
-  color: #ffffff !important;
 }
