@@ -1,8 +1,8 @@
 ;(function($) {
   "use strict";
 
-  var friendsList = [];
   $.autoComplete = function(e1, options){
+    var friendsList = [];
     var base = this;
     var element = e1;
     var id = element.attr('id');
@@ -15,52 +15,69 @@
     }
 
     base.initFriendsList = function(){
-      /* With current permissions we will only get friends that have also authorized this app */
-      FB.api( "/me/friends?fields=name,picture", function (response) {
+      FB.api("/me/taggable_friends?fields=name,picture", function (response) {
         if(response && response.data && !response.error){
-          for(var i = 0; i < response.data.length; i++){
+          for(var i = 1; i < response.data.length + 1; i++){
             var data = {
-              name: response.data[i].name,
-              picture: response.data[i].picture.data.url
+              name: response.data[i-1].name,
+              picture: response.data[i-1].picture.data.url
             };
             friendsList[i] = data;
-            base.addUser(friendsList[i]);
           }
         }
       })
-      FB.api( "/me?fields=name,picture", function (response) {
+      FB.api("/me?fields=name,picture", function (response) {
         if(response && !response.error){
           var data = {
             name: response.name,
             picture: response.picture.data.url
           };
           friendsList[0] = data;
-          base.addUser(friendsList[0]);
         }
       });
     };
 
     base.initKeyboardControls = function(){
       $(element).keyup(function(event){
-        if(event.which == 13){
+        if(event.which == 13){ //Enter
           base.submit();
-        }
-        if(event.which == 38){
+        } else if(event.which == 38){ //Up Arrow
           base.moveUp();
-        }
-        if(event.which == 40){
+        } else if(event.which == 40){ //Down Array
           base.moveDown();
+        } else if(event.which == 27){ //Esc
+          base.hideFriends();
+        }else{
+          base.search();
         }
       });
     }
 
+    base.search = function(){
+      base.showFriends();
+      var matches = [];
+      var num_matches = 0;
+      for(var i = 0; i < friendsList.length && num_matches < 10; i++){
+        var match = false;
+        match = friendsList[i].name.toLowerCase().indexOf(element.val().toLowerCase()) >= 0;
+        if(match){
+          matches.push(friendsList[i]);
+          num_matches ++;
+        }
+      }
+      base.drawFriends(matches);
+    }
+
     base.submit = function(){
+      //TODO
     }
 
     base.moveUp = function(){
+      //TODO
     }
 
     base.moveDown = function(){
+      //TODO
     }
 
     base.initDiv = function(){
@@ -70,22 +87,49 @@
       var left = element.offset().left - element.position().left;
       $("#" + id + "-autocomplete").css('left', left);
       $("#" + id + "-autocomplete").css('position', 'relative');
+      base.hideFriends();
+      $(element).focusout(function(event){
+        base.hideFriends();
+      });
+
+      $(element).focusin(function(event){
+        base.drawFriends();
+      });
     }
 
-    base.addUser = function(user){
-      var name = user.name;
-      var picture = user.picture;
-      var li = "<li class='autocomplete-user' title='" + name + "' role='option' aria-selected='false'>";
-      li += "<img class='autocomplete-image' src='" + picture + "'>";
-      li += "<span class='autocomplete-name'>" + name + "</span>";
-      li += "</li>";
-      $("#" + id + "-autocomplete-list").append(li);
+    base.drawFriends = function(friends){
+      base.clearFriends();
+      if(friends.length == 0){
+        base.hideFriends();
+      }
+      for(var i = 0; i < friends.length; i++){
+        var friend = friends[i];
+        var name = friend.name;
+        var picture = friend.picture;
+        var li = "<li class='autocomplete-user " + id +"-autocomplete-user'title='" + name + "' role='option'>";
+        li += "<img class='autocomplete-image' src='" + picture + "'>";
+        li += "<span class='autocomplete-name'>" + name + "</span>";
+        li += "</li>";
+        $("#" + id + "-autocomplete-list").append(li);
+      }
 
       $(".autocomplete-user").hover(function(){
         $(this).addClass("autocomplete-user-selected");
       }, function(){
         $(this).removeClass("autocomplete-user-selected");
       });
+    }
+
+    base.clearFriends = function(){
+      $("." + id +"-autocomplete-user").remove();
+    }
+
+    base.hideFriends = function(){
+      $("#" + id + "-autocomplete").hide();
+    }
+
+    base.showFriends = function(){
+      $("#" + id + "-autocomplete").show();
     }
 
     init();
