@@ -91,8 +91,10 @@
       //TODO
       var searchString = base.findSearchString();
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
-      element.val(element.val().replace(searchString, selected));
-      listening = false;
+      if (selected) {
+        element.val(element.val().replace(searchString, selected));
+        listening = false;
+      }
     }
     base.findSearchString = function () {
       var cursor = element[0].selectionStart;
