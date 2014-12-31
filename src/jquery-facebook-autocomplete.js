@@ -6,9 +6,6 @@
     var base = this;
     var element = e1;
     var id = element.attr('id');
-    var listening = false;
-    var showingFriendList = false;
-    var searchString = "";
 
     var init = function () {
       $(".autocomplete").eq(0).remove();
@@ -54,14 +51,6 @@
           base.hideFriends();
         }
       })
-      .keypress(function (event) {
-        var c = String.fromCharCode(event.which);
-        if (c == "@") {
-          listening = true;
-        } else {
-          searchString += c;
-        }
-      })
       .keyup(function (event) {
         base.search();
       });
@@ -93,7 +82,6 @@
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
       if (selected) {
         element.val(element.val().replace(searchString, selected));
-        listening = false;
       }
     }
     base.findSearchString = function () {
