@@ -42,9 +42,11 @@
         if (event.which == 13) { //Enter
           base.submit();
         } else if (event.which == 38) { //Up Arrow
+          event.preventDefault();
           event.stopPropagation();
           base.moveSelected(-1);
         } else if (event.which == 40) { //Down Array
+          event.preventDefault();
           event.stopPropagation();
           base.moveSelected(+1);
         } else if (event.keyCode == 27) { //Esc
@@ -151,7 +153,9 @@
       }, function () {
         $(this).removeClass("autocomplete-user-selected");
       });
-      $("#" + id + "-autocomplete .autocomplete-user").eq(0).addClass("autocomplete-user-selected");
+      if ($("autocomplete-user-selected").length == 0) {
+        $("#" + id + "-autocomplete .autocomplete-user").eq(0).addClass("autocomplete-user-selected");
+      }
     }
 
     base.clearFriends = function(){
