@@ -51,31 +51,38 @@
           base.hideFriends();
         }
       })
-      .keyup(function (event) {
+      .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
         base.search();
       });
     }
 
     base.search = function () {
       var searchString = base.findSearchString();
-      if (searchString ===undefined || searchString === null || searchString.length === 0) {
+      if (searchString === undefined || searchString === null || searchString.length === 0) {
         return base.hideFriends();
       }
-      searchString = searchString.substring(1).toLowerCase();
+      // substring ignores @ prefix
+      searchString = searchString.substring(1);
       base.showFriends();
       var matches = [];
       var num_matches = 0;
       for(var i = 0; i < friendsList.length && num_matches < 10; i++){
-        var match = false;
-        match = friendsList[i].name.toLowerCase().indexOf(searchString) >= 0;
-        if(match){
+        if(stringsMatch(friendsList[i].name, searchString)){
           matches.push(friendsList[i]);
           num_matches ++;
         }
       }
       base.drawFriends(matches);
+
+      // abstract out matching algorithm
+      function stringsMatch(str1, str2) {
+        str1 = str1.toLowerCase();
+        str2 = str2.toLowerCase();
+        return str1.indexOf(str2) >= 0 || str2.indexOf(str1) >= 0;
+      }
     }
 
+    // then replaces search string with selected name
     base.submit = function(){
       //TODO
       var searchString = base.findSearchString();
@@ -84,6 +91,8 @@
         element.val(element.val().replace(searchString, selected));
       }
     }
+
+    // searches backwards for first @, returns substring from @ to cursor position
     base.findSearchString = function () {
       var cursor = element[0].selectionStart;
       var i = cursor - 1;
@@ -97,6 +106,7 @@
         return element.val().substring(i + 1, cursor);
       }
     }
+ 
     base.moveSelected = function (direction) {
       var numFriends = $(".autocomplete-user").length;
       var nextIndex = ($(".autocomplete-user.autocomplete-user-selected").index() + direction) % numFriends;
