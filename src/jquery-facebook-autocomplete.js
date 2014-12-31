@@ -56,6 +56,9 @@
       .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
         if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40)
           base.search();
+      })
+      .on("click", function () {
+        base.search();
       });
     }
 
@@ -64,8 +67,6 @@
       if (searchString === undefined || searchString === null || searchString.length === 0) {
         return base.hideFriends();
       }
-      // substring ignores @ prefix
-      searchString = searchString.substring(1);
       base.showFriends();
       var matches = [];
       var num_matches = 0;
@@ -81,32 +82,33 @@
       function stringsMatch(str1, str2) {
         str1 = str1.toLowerCase();
         str2 = str2.toLowerCase();
-        return str1.indexOf(str2) >= 0 || str2.indexOf(str1) >= 0;
+        return str1.indexOf(str2) >= 0;
       }
     }
 
     // then replaces search string with selected name
     base.submit = function(){
-      //TODO
       var searchString = base.findSearchString();
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
       if (selected) {
-        element.val(element.val().replace(searchString, selected));
+        element.val(element.val().replace(new RegExp("@+" + searchString, "g"), selected));
+        base.hideFriends();
       }
     }
 
-    // searches backwards for first @, returns substring from @ to cursor position
+    // searches backwards from cursor for first @, returns substring from @ to cursor position
     base.findSearchString = function () {
       var cursor = element[0].selectionStart;
       var i = cursor - 1;
-      do {
-        var c = element.val()[i];
-        i--;
-      } while (i >= 0 && c !== "@");
+      var c = element.val()[i];
+      while (i >= 0 && c !== "@") {
+        c = element.val()[--i];
+      }
       if (c !== "@") {
         return null;
       } else {
-        return element.val().substring(i + 1, cursor);
+        var x = element.val().substring(i + 1, cursor).split("@").join("");
+        return x;
       }
     }
  
