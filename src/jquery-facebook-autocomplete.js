@@ -54,7 +54,8 @@
         }
       })
       .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
-        base.search();
+        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40)
+          base.search();
       });
     }
 
