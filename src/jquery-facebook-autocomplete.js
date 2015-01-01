@@ -101,10 +101,12 @@
       var cursor = element[0].selectionStart;
       var i = cursor - 1;
       var c = element.val()[i];
+      var last = null;
       while (i >= 0 && c !== "@") {
+        last = c;
         c = element.val()[--i];
       }
-      if (c !== "@") {
+      if (last === " " || c !== "@") {
         return null;
       } else {
         var x = element.val().substring(i + 1, cursor).split("@").join("");
