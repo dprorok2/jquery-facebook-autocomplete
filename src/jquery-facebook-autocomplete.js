@@ -116,7 +116,7 @@
         next = element.val()[--i] || "";
         nextLower = next.toLowerCase();
       }
-      if (next === "@" || last === " " || last === "." || c !== "@") {
+      if ((next && next !== " ") || last === " " || last === "." || c !== "@") {
         i = null;
       } else {
         searchString = element.val().substring(i + 1, cursor).split("@").join("");
