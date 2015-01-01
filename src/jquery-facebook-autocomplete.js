@@ -7,8 +7,8 @@
     var element = e1;
     var id = element.attr('id');
 
-
-    var init = function(){
+    var init = function () {
+      $(".autocomplete").eq(0).remove();
       base.initFriendsList();
       base.initKeyboardControls();
       base.initDiv();
@@ -37,47 +37,105 @@
       });
     };
 
-    base.initKeyboardControls = function(){
-      $(element).keyup(function(event){
-        if(event.which == 13){ //Enter
+    base.initKeyboardControls = function () {
+      $(element).keydown(function (event) {
+        if (event.which == 13) { //Enter
           base.submit();
-        } else if(event.which == 38){ //Up Arrow
-          base.moveUp();
-        } else if(event.which == 40){ //Down Array
-          base.moveDown();
-        } else if(event.which == 27){ //Esc
+        } else if (event.which == 38) { //Up Arrow
+          event.preventDefault();
+          event.stopPropagation();
+          base.moveSelected(-1);
+        } else if (event.which == 40) { //Down Array
+          event.preventDefault();
+          event.stopPropagation();
+          base.moveSelected(+1);
+        } else if (event.keyCode == 27) { //Esc
           base.hideFriends();
-        }else{
-          base.search();
         }
+      })
+      .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
+        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40)
+          base.search();
+      })
+      .on("click", function () {
+        base.search();
       });
     }
 
-    base.search = function(){
+    base.search = function () {
+      var searchString = base.findSearchString().searchString;
+      if (searchString === undefined || searchString === null || searchString.length === 0) {
+        return base.hideFriends();
+      }
       base.showFriends();
       var matches = [];
       var num_matches = 0;
       for(var i = 0; i < friendsList.length && num_matches < 10; i++){
-        var match = false;
-        match = friendsList[i].name.toLowerCase().indexOf(element.val().toLowerCase()) >= 0;
-        if(match){
+        if(stringsMatch(friendsList[i].name, searchString)){
           matches.push(friendsList[i]);
           num_matches ++;
         }
       }
       base.drawFriends(matches);
+
+      // abstract out matching algorithm
+      function stringsMatch(str1, str2) {
+        str1 = str1.toLowerCase();
+        str2 = str2.toLowerCase();
+        return str1.indexOf(str2) >= 0;
+      }
     }
 
+    // replaces search string with selected name
     base.submit = function(){
-      //TODO
+      var startingIndex = base.findSearchString().startingIndex;
+      if (startingIndex === null) {
+        return base.hideFriends();
+      }
+      var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
+      if (selected) {
+        // replace the search string with the real name (left of string + selected + right of string)
+        element.val(element.val().substring(0, startingIndex) + selected + element.val().substring(element[0].selectionStart));
+        // if submit was from clicking on the list, we need to refocus on the input
+        element.focus();
+        // We need to manually set the cursor, because the old index is no longer relevant to the new string
+        element[0].selectionStart = startingIndex + selected.length;
+        element[0].selectionEnd = element[0].selectionStart;
+        base.hideFriends();
+      }
     }
 
-    base.moveUp = function(){
-      //TODO
+    // returns 
+    // if valid: { searchString: [substring from @ to cursor position], startingIndex: [index of the @] }
+    // else: { searchString: null, startingIndex: null }
+    base.findSearchString = function () {
+      var searchString = null;
+      var cursor = element[0].selectionStart;
+      var i = cursor - 1;
+      var last = null;
+      var curr = null;
+      var next = element.val()[i] || "";
+      var nextLower = next.toLowerCase();
+      while (i >= 0 && (curr !== "@" || (nextLower && nextLower >= "a" && nextLower <= "z"))) {
+        last = curr;
+        curr = next;
+        next = element.val()[--i] || "";
+        nextLower = next.toLowerCase();
+      }
+      if ((next && next !== " ") || last === " " || last === "." || curr !== "@") {
+        i = null;
+      } else {
+        // substring from first @ to cursor position, ignoring @ signs
+        searchString = element.val().substring(i + 1, cursor).split("@").join("");
+      }
+      return { searchString: searchString, startingIndex: i + 1 };
     }
-
-    base.moveDown = function(){
-      //TODO
+ 
+    base.moveSelected = function (direction) {
+      var numFriends = $(".autocomplete-user").length;
+      var nextIndex = ($(".autocomplete-user.autocomplete-user-selected").index() + direction) % numFriends;
+      $(".autocomplete-user-selected").removeClass("autocomplete-user-selected");
+      $(".autocomplete-user").eq(nextIndex).addClass("autocomplete-user-selected");
     }
 
     base.initDiv = function(){
@@ -88,8 +146,12 @@
       $("#" + id + "-autocomplete").css('left', left);
       $("#" + id + "-autocomplete").css('position', 'relative');
       base.hideFriends();
-      $(element).focusout(function(event){
-        base.hideFriends();
+      // we can add the click function to the list instead of each individual row 
+      // because submit already knows which row was selected
+      $(".autocomplete-list").on("click", function () { base.submit(); });
+      $(element).focusout(function (event) {
+        // set in timeout to allow click event to fire first
+        setTimeout(function () { base.hideFriends(); }, 100);
       });
 
       $(element).focusin(function(event){
@@ -99,25 +161,28 @@
 
     base.drawFriends = function(friends){
       base.clearFriends();
-      if(friends.length == 0){
-        base.hideFriends();
+      if(!friends || friends.length === 0){
+        return base.hideFriends();
       }
       for(var i = 0; i < friends.length; i++){
         var friend = friends[i];
         var name = friend.name;
         var picture = friend.picture;
-        var li = "<li class='autocomplete-user " + id +"-autocomplete-user'title='" + name + "' role='option'>";
+        var li = "<li class='autocomplete-user " + id +"-autocomplete-user' title='" + name + "' role='option'>";
         li += "<img class='autocomplete-image' src='" + picture + "'>";
         li += "<span class='autocomplete-name'>" + name + "</span>";
         li += "</li>";
         $("#" + id + "-autocomplete-list").append(li);
       }
-
-      $(".autocomplete-user").hover(function(){
+      $(".autocomplete-user").hover(function () {
+        $(".autocomplete-user-selected").removeClass("autocomplete-user-selected");
         $(this).addClass("autocomplete-user-selected");
-      }, function(){
+      }, function () {
         $(this).removeClass("autocomplete-user-selected");
       });
+      if ($("autocomplete-user-selected").length == 0) {
+        $("#" + id + "-autocomplete .autocomplete-user").eq(0).addClass("autocomplete-user-selected");
+      }
     }
 
     base.clearFriends = function(){
