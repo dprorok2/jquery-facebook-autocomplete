@@ -95,8 +95,9 @@
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
       if (selected) {
         element.val(element.val().substring(0, startingIndex) + selected + element.val().substring(element[0].selectionStart));
+        element.focus();
         element[0].selectionStart = startingIndex + selected.length;
-        element[0].selectionEnd = startingIndex + selected.length;
+        element[0].selectionEnd = element[0].selectionStart;
         base.hideFriends();
       }
     }
@@ -139,8 +140,10 @@
       $("#" + id + "-autocomplete").css('left', left);
       $("#" + id + "-autocomplete").css('position', 'relative');
       base.hideFriends();
-      $(element).focusout(function(event){
-        base.hideFriends();
+      $(".autocomplete-list").on("click", function () { base.submit(); });
+      $(element).focusout(function (event) {
+        // set in timeout to allow click event to fire first
+        setTimeout(function () { base.hideFriends(); }, 100);
       });
 
       $(element).focusin(function(event){
@@ -157,7 +160,7 @@
         var friend = friends[i];
         var name = friend.name;
         var picture = friend.picture;
-        var li = "<li class='autocomplete-user " + id +"-autocomplete-user' title='" + name + "' role='option' onClick='base.submit'>";
+        var li = "<li class='autocomplete-user " + id +"-autocomplete-user' title='" + name + "' role='option'>";
         li += "<img class='autocomplete-image' src='" + picture + "'>";
         li += "<span class='autocomplete-name'>" + name + "</span>";
         li += "</li>";
