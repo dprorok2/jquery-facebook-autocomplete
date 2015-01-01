@@ -94,32 +94,39 @@
       }
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
       if (selected) {
+        // replace the search string with the real name (left of string + selected + right of string)
         element.val(element.val().substring(0, startingIndex) + selected + element.val().substring(element[0].selectionStart));
+        // if submit was from clicking on the list, we need to refocus on the input
         element.focus();
+        // We need to manually set the cursor, because the old index is no longer relevant to the new string
         element[0].selectionStart = startingIndex + selected.length;
         element[0].selectionEnd = element[0].selectionStart;
         base.hideFriends();
       }
     }
 
-    // searches backwards from cursor for first @, returns substring from @ to cursor position
+    // searches backwards from cursor for first @, 
+    // returns 
+    // if valid: { searchString: [substring from @ to cursor position], startingIndex: [index of the @] }
+    // else: { searchString: null, startingIndex: null }
     base.findSearchString = function () {
       var searchString = null;
       var cursor = element[0].selectionStart;
       var i = cursor - 1;
-      var c = null;
       var last = null;
+      var curr = null;
       var next = element.val()[i] || "";
       var nextLower = next.toLowerCase();
-      while (i >= 0 && (c !== "@" || (nextLower && nextLower >= "a" && nextLower <= "z"))) {
-        last = c;
-        c = next;
+      while (i >= 0 && (curr !== "@" || (nextLower && nextLower >= "a" && nextLower <= "z"))) {
+        last = curr;
+        curr = next;
         next = element.val()[--i] || "";
         nextLower = next.toLowerCase();
       }
-      if ((next && next !== " ") || last === " " || last === "." || c !== "@") {
+      if ((next && next !== " ") || last === " " || last === "." || curr !== "@") {
         i = null;
       } else {
+        // substring from first @ to cursor position, ignoring @ signs
         searchString = element.val().substring(i + 1, cursor).split("@").join("");
       }
       return { searchString: searchString, startingIndex: i + 1 };
@@ -140,6 +147,8 @@
       $("#" + id + "-autocomplete").css('left', left);
       $("#" + id + "-autocomplete").css('position', 'relative');
       base.hideFriends();
+      // we can add the click function to the list instead of each individual row 
+      // because submit already knows which row was selected
       $(".autocomplete-list").on("click", function () { base.submit(); });
       $(element).focusout(function (event) {
         // set in timeout to allow click event to fire first
