@@ -86,7 +86,7 @@
       }
     }
 
-    // then replaces search string with selected name
+    // replaces search string with selected name
     base.submit = function(){
       var startingIndex = base.findSearchString().startingIndex;
       if (startingIndex === null) {
@@ -105,7 +105,6 @@
       }
     }
 
-    // searches backwards from cursor for first @, 
     // returns 
     // if valid: { searchString: [substring from @ to cursor position], startingIndex: [index of the @] }
     // else: { searchString: null, startingIndex: null }
@@ -176,6 +175,7 @@
         $("#" + id + "-autocomplete-list").append(li);
       }
       $(".autocomplete-user").hover(function () {
+        $(".autocomplete-user-selected").removeClass("autocomplete-user-selected");
         $(this).addClass("autocomplete-user-selected");
       }, function () {
         $(this).removeClass("autocomplete-user-selected");
