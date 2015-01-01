@@ -7,17 +7,23 @@
     var element = e1;
     var id = element.attr('id');
 
+    var num_friends_draw = 10;
+
     var init = function () {
       $(".autocomplete").eq(0).remove();
       base.initFriendsList();
       base.initKeyboardControls();
       base.initDiv();
-    }
+    };
 
-    base.initFriendsList = function(){
+    /* Initialize global friends list variable asynchronously 
+    *  First person in the list will be signed-in user
+    *  /taggable_friends requires additional Facebook API permissions
+    */
+    base.initFriendsList = function () {
       FB.api("/me/taggable_friends?fields=name,picture", function (response) {
-        if(response && response.data && !response.error){
-          for(var i = 1; i < response.data.length + 1; i++){
+        if (response && response.data && !response.error) {
+          for (var i = 1; i < response.data.length + 1; i++) {
             var data = {
               name: response.data[i-1].name,
               picture: response.data[i-1].picture.data.url
@@ -25,9 +31,9 @@
             friendsList[i] = data;
           }
         }
-      })
+      });
       FB.api("/me?fields=name,picture", function (response) {
-        if(response && !response.error){
+        if (response && !response.error) {
           var data = {
             name: response.name,
             picture: response.picture.data.url
@@ -54,13 +60,14 @@
         }
       })
       .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
-        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40)
+        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40) {
           base.search();
+        }
       })
       .on("click", function () {
         base.search();
       });
-    }
+    };
 
     base.search = function () {
       var searchString = base.findSearchString().searchString;
@@ -70,24 +77,22 @@
       base.showFriends();
       var matches = [];
       var num_matches = 0;
-      for(var i = 0; i < friendsList.length && num_matches < 10; i++){
-        if(stringsMatch(friendsList[i].name, searchString)){
+      for (var i = 0; i < friendsList.length && num_matches < num_friends_draw; i++) {
+        if (stringsMatch(friendsList[i].name, searchString)) {
           matches.push(friendsList[i]);
           num_matches ++;
         }
       }
       base.drawFriends(matches);
-
-      // abstract out matching algorithm
       function stringsMatch(str1, str2) {
         str1 = str1.toLowerCase();
         str2 = str2.toLowerCase();
         return str1.indexOf(str2) >= 0;
       }
-    }
+    };
 
-    // replaces search string with selected name
-    base.submit = function(){
+    // TODO: Implement callback
+    base.submit = function() {
       var startingIndex = base.findSearchString().startingIndex;
       if (startingIndex === null) {
         return base.hideFriends();
@@ -103,7 +108,7 @@
         element[0].selectionEnd = element[0].selectionStart;
         base.hideFriends();
       }
-    }
+    };
 
     // returns 
     // if valid: { searchString: [substring from @ to cursor position], startingIndex: [index of the @] }
@@ -129,27 +134,27 @@
         searchString = element.val().substring(i + 1, cursor).split("@").join("");
       }
       return { searchString: searchString, startingIndex: i + 1 };
-    }
+    };
  
     base.moveSelected = function (direction) {
       var numFriends = $(".autocomplete-user").length;
       var nextIndex = ($(".autocomplete-user.autocomplete-user-selected").index() + direction) % numFriends;
       $(".autocomplete-user-selected").removeClass("autocomplete-user-selected");
       $(".autocomplete-user").eq(nextIndex).addClass("autocomplete-user-selected");
-    }
+    };
 
     base.initDiv = function(){
       var div = "<div class='autocomplete' id='" + id +"-autocomplete'><ul class='autocomplete-list' id ='" + id + "-autocomplete-list'></ul></div>";
       element.after(div);
       $("#" + id + "-autocomplete").width(element.outerWidth());
       var left = element.offset().left - element.position().left;
-      $("#" + id + "-autocomplete").css('left', left);
-      $("#" + id + "-autocomplete").css('position', 'relative');
+      $("#" + id + "-autocomplete").css('position', 'absolute');
       base.hideFriends();
       // we can add the click function to the list instead of each individual row 
       // because submit already knows which row was selected
       $(".autocomplete-list").on("click", function () { base.submit(); });
       $(element).focusout(function (event) {
+        // TODO: Fix
         // set in timeout to allow click event to fire first
         setTimeout(function () { base.hideFriends(); }, 100);
       });
@@ -157,14 +162,14 @@
       $(element).focusin(function(event){
         base.drawFriends();
       });
-    }
+    };
 
     base.drawFriends = function(friends){
       base.clearFriends();
-      if(!friends || friends.length === 0){
+      if (!friends || friends.length === 0){
         return base.hideFriends();
       }
-      for(var i = 0; i < friends.length; i++){
+      for (var i = 0; i < friends.length; i++){
         var friend = friends[i];
         var name = friend.name;
         var picture = friend.picture;
@@ -180,22 +185,22 @@
       }, function () {
         $(this).removeClass("autocomplete-user-selected");
       });
-      if ($("autocomplete-user-selected").length == 0) {
+      if ($("autocomplete-user-selected").length === 0){
         $("#" + id + "-autocomplete .autocomplete-user").eq(0).addClass("autocomplete-user-selected");
       }
-    }
+    };
 
     base.clearFriends = function(){
       $("." + id +"-autocomplete-user").remove();
-    }
+    };
 
     base.hideFriends = function(){
       $("#" + id + "-autocomplete").hide();
-    }
+    };
 
     base.showFriends = function(){
       $("#" + id + "-autocomplete").show();
-    }
+    };
 
     init();
 
