@@ -63,7 +63,7 @@
     }
 
     base.search = function () {
-      var searchString = base.findSearchString();
+      var searchString = base.findSearchString().searchString;
       if (searchString === undefined || searchString === null || searchString.length === 0) {
         return base.hideFriends();
       }
@@ -88,30 +88,40 @@
 
     // then replaces search string with selected name
     base.submit = function(){
-      var searchString = base.findSearchString();
+      var startingIndex = base.findSearchString().startingIndex;
+      if (startingIndex === null) {
+        return base.hideFriends();
+      }
       var selected = $(".autocomplete-user-selected").text() || $(".autocomplete-user").text();
       if (selected) {
-        element.val(element.val().replace(new RegExp("@+" + searchString, "g"), selected));
+        element.val(element.val().substring(0, startingIndex) + selected + element.val().substring(element[0].selectionStart));
+        element[0].selectionStart = startingIndex + selected.length;
+        element[0].selectionEnd = startingIndex + selected.length;
         base.hideFriends();
       }
     }
 
     // searches backwards from cursor for first @, returns substring from @ to cursor position
     base.findSearchString = function () {
+      var searchString = null;
       var cursor = element[0].selectionStart;
       var i = cursor - 1;
-      var c = element.val()[i];
+      var c = null;
       var last = null;
-      while (i >= 0 && c !== "@") {
+      var next = element.val()[i] || "";
+      var nextLower = next.toLowerCase();
+      while (i >= 0 && (c !== "@" || (nextLower && nextLower >= "a" && nextLower <= "z"))) {
         last = c;
-        c = element.val()[--i];
+        c = next;
+        next = element.val()[--i] || "";
+        nextLower = next.toLowerCase();
       }
-      if (last === " " || c !== "@") {
-        return null;
+      if (next === "@" || last === " " || last === "." || c !== "@") {
+        i = null;
       } else {
-        var x = element.val().substring(i + 1, cursor).split("@").join("");
-        return x;
+        searchString = element.val().substring(i + 1, cursor).split("@").join("");
       }
+      return { searchString: searchString, startingIndex: i + 1 };
     }
  
     base.moveSelected = function (direction) {
