@@ -7,7 +7,7 @@
     var element = e1;
     var id = element.attr('id');
 
-    var num_friends_draw = 10;
+    var num_friends_draw = 7;
 
     var init = function () {
       $(".autocomplete").eq(0).remove();
@@ -71,6 +71,7 @@
 
     base.search = function () {
       var searchString = base.findSearchString().searchString;
+
       if (searchString === undefined || searchString === null || searchString.length === 0) {
         return base.hideFriends();
       }
@@ -146,9 +147,18 @@
     base.initDiv = function(){
       var div = "<div class='autocomplete' id='" + id +"-autocomplete'><ul class='autocomplete-list' id ='" + id + "-autocomplete-list'></ul></div>";
       element.after(div);
-      $("#" + id + "-autocomplete").width(element.outerWidth());
-      var left = element.offset().left - element.position().left;
-      $("#" + id + "-autocomplete").css('position', 'absolute');
+      $("#" + id + "-autocomplete").css( {
+        position: 'absolute',
+        left: element.offset().left,
+        width: element.innerWidth(),
+        maxWidth: element.css("max-width")
+      });
+      $(window).resize(function() {
+        $("#" + id + "-autocomplete").css( {
+          left: element.offset().left,
+          width: element.innerWidth(),
+        });
+      });
       base.hideFriends();
       // we can add the click function to the list instead of each individual row 
       // because submit already knows which row was selected
