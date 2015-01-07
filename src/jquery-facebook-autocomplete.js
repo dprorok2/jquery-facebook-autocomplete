@@ -138,23 +138,21 @@
       $(".autocomplete-user").eq(nextIndex).addClass("autocomplete-user-selected");
     }
 
-    base.initDiv = function(){
+    base.initDiv = function () {
       var div = "<div class='autocomplete' id='" + id +"-autocomplete'><ul class='autocomplete-list' id ='" + id + "-autocomplete-list'></ul></div>";
       element.after(div);
-      $("#" + id + "-autocomplete").width(element.outerWidth());
       var left = element.offset().left - element.position().left;
-      $("#" + id + "-autocomplete").css('left', left);
-      $("#" + id + "-autocomplete").css('position', 'relative');
+      $("#" + id + "-autocomplete").css({'left': left, 'position': 'relative', width: element.outerWidth()});
       base.hideFriends();
       // we can add the click function to the list instead of each individual row 
       // because submit already knows which row was selected
       $(".autocomplete-list").on("click", function () { base.submit(); });
+
       $(element).focusout(function (event) {
         // set in timeout to allow click event to fire first
         setTimeout(function () { base.hideFriends(); }, 100);
-      });
-
-      $(element).focusin(function(event){
+      })
+        .focusin(function (event) {
         base.drawFriends();
       });
     }
@@ -164,6 +162,7 @@
       if(!friends || friends.length === 0){
         return base.hideFriends();
       }
+      var fragment = $(document.createDocumentFragment());
       for(var i = 0; i < friends.length; i++){
         var friend = friends[i];
         var name = friend.name;
@@ -172,8 +171,9 @@
         li += "<img class='autocomplete-image' src='" + picture + "'>";
         li += "<span class='autocomplete-name'>" + name + "</span>";
         li += "</li>";
-        $("#" + id + "-autocomplete-list").append(li);
+        fragment.append(li);
       }
+      $("#" + id + "-autocomplete-list").append(fragment);
       $(".autocomplete-user").hover(function () {
         $(".autocomplete-user-selected").removeClass("autocomplete-user-selected");
         $(this).addClass("autocomplete-user-selected");
