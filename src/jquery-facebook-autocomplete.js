@@ -7,12 +7,18 @@
     var element = e1;
     var id = element.attr('id');
 
+    var num_friends_draw = 7;
+
     var init = function () {
       base.initFriendsList();
       base.initKeyboardControls();
       base.initDiv();
     };
 
+    /* Initialize global friends list variable asynchronously 
+    *  First person in the list will be signed-in user
+    *  /taggable_friends requires additional Facebook API permissions
+    */
     base.initFriendsList = function () {
       FB.api("/me/taggable_friends?fields=name,picture", function (response) {
         if (response && response.data && !response.error) {
@@ -53,8 +59,9 @@
         }
       })
       .keyup(function (event) { // using keyup, otherwise the letter doesn't get added to element.val() in time
-        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40)
+        if (event.which !== 13 && event.which !== 27 && event.which !== 38 && event.which !== 40) {
           base.search();
+        }
       })
       .on("click", function () {
         base.search();
@@ -63,21 +70,20 @@
 
     base.search = function () {
       var searchString = base.findSearchString().searchString;
+
       if (searchString === undefined || searchString === null || searchString.length === 0) {
         return base.hideFriends();
       }
       base.showFriends();
       var matches = [];
       var num_matches = 0;
-      for (var i = 0; i < friendsList.length && num_matches < 10; i++) {
+      for (var i = 0; i < friendsList.length && num_matches < num_friends_draw; i++) {
         if (stringsMatch(friendsList[i].name, searchString)) {
           matches.push(friendsList[i]);
           num_matches++;
         }
       }
       base.drawFriends(matches);
-
-      // abstract out matching algorithm
       function stringsMatch(str1, str2) {
         str1 = str1.toLowerCase();
         str2 = str2.toLowerCase();
@@ -85,8 +91,8 @@
       }
     };
 
-    // replaces search string with selected name
-    base.submit = function () {
+    // TODO: Implement callback
+    base.submit = function() {
       var startingIndex = base.findSearchString().startingIndex;
       if (startingIndex === null) {
         return base.hideFriends();
@@ -129,7 +135,7 @@
       }
       return { searchString: searchString, startingIndex: i + 1 };
     };
-
+ 
     base.moveSelected = function (direction) {
       var numFriends = $("." + id + "-autocomplete-user").length;
       var nextIndex = ($("." + id + "-autocomplete-user.autocomplete-user-selected").index() + direction) % numFriends;
@@ -140,20 +146,31 @@
     base.initDiv = function () {
       var div = "<div class='autocomplete' id='" + id + "-autocomplete'><ul class='autocomplete-list' id ='" + id + "-autocomplete-list'></ul></div>";
       element.after(div);
-      var left = element.offset().left - element.position().left;
-      $("#" + id + "-autocomplete").css({ 'left': left, 'position': 'relative', width: element.outerWidth() });
+      $("#" + id + "-autocomplete").css( {
+        position: 'absolute',
+        left: element.offset().left,
+        width: element.innerWidth(),
+        maxWidth: element.css("max-width")
+      });
+      $(window).resize(function() {
+        $("#" + id + "-autocomplete").css( {
+          left: element.offset().left,
+          width: element.innerWidth(),
+        });
+      });
       base.hideFriends();
       // we can add the click function to the list instead of each individual row 
       // because submit already knows which row was selected
       $("#" + id + "-autocomplete-list").on("click", function () { base.submit(); });
 
       $(element).focusout(function (event) {
+        // TODO: Fix
         // set in timeout to allow click event to fire first
         setTimeout(function () { base.hideFriends(); }, 100);
       })
         .focusin(function (event) {
-          base.drawFriends();
-        });
+        base.drawFriends();
+      });
     };
 
     base.drawFriends = function (friends) {
