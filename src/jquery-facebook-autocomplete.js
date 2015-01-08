@@ -6,8 +6,10 @@
     var base = this;
     var element = e1;
     var id = element.attr('id');
-
-    var num_friends_draw = 7;
+    var defaults = {
+      rows: 5
+    }
+    var config = $.extend({}, defaults, options);
 
     var init = function () {
       base.initFriendsList();
@@ -77,7 +79,7 @@
       base.showFriends();
       var matches = [];
       var num_matches = 0;
-      for (var i = 0; i < friendsList.length && num_matches < num_friends_draw; i++) {
+      for (var i = 0; i < friendsList.length && num_matches < config.rows; i++) {
         if (stringsMatch(friendsList[i].name, searchString)) {
           matches.push(friendsList[i]);
           num_matches++;
