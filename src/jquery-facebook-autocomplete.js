@@ -163,15 +163,16 @@
       base.hideFriends();
       // we can add the click function to the list instead of each individual row 
       // because submit already knows which row was selected
-      $("#" + id + "-autocomplete-list").on("click", function () { base.submit(); });
+      $("#" + id + "-autocomplete-list").on("click", function (event) {
+        base.submit();
+      }).on("mousedown", function (event) {
+        event.preventDefault();
+      });
 
       $(element).focusout(function (event) {
-        // TODO: Fix
-        // set in timeout to allow click event to fire first
-        setTimeout(function () { base.hideFriends(); }, 100);
-      })
-        .focusin(function (event) {
-        base.drawFriends();
+        base.hideFriends();
+      }).focusin(function (event) {
+          base.drawFriends();
       });
     };
 
